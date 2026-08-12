@@ -68,7 +68,7 @@ func TestGetChainsMapsExpectedContract(t *testing.T) {
 				ToUser:   chains.User{ID: otherUserID, Name: "Иван", City: "Москва"},
 				Item: chains.Item{
 					ID: uuid.New(), Title: "Телефон", Description: "Состояние отличное",
-					CategoryID: uuid.New(), Photo: "phone.jpg",
+					CategoryID: uuid.New(), Photos: []string{"phone.jpg", "phone-side.jpg"},
 					Attributes:     json.RawMessage(`[{"attribute_id":"condition","value":"excellent"}]`),
 					EstimatedPrice: 85000,
 				},
@@ -100,6 +100,12 @@ func TestGetChainsMapsExpectedContract(t *testing.T) {
 	if chain.MySummary.ReceivingItem.FromUser.Name != "Иван" {
 		t.Fatalf("unexpected receiving user: %#v", chain.MySummary.ReceivingItem.FromUser)
 	}
+	if len(chain.Steps[0].Item.Photos) != 2 || chain.Steps[0].Item.Photos[1] != "phone-side.jpg" {
+		t.Fatalf("all item photos were not mapped: %#v", chain.Steps[0].Item.Photos)
+	}
+	if len(chain.MySummary.GivingItem.Photos) != 2 || chain.MySummary.GivingItem.Photos[1] != "phone-side.jpg" {
+		t.Fatalf("all summary photos were not mapped: %#v", chain.MySummary.GivingItem.Photos)
+	}
 }
 
 func TestGetChainsRejectsInvalidUserID(t *testing.T) {
@@ -126,7 +132,7 @@ func TestGetChainMapsExpectedContract(t *testing.T) {
 			Order:      1,
 			FromUser:   chains.User{ID: currentUserID, Name: "Алексей", City: "Москва"},
 			ToUser:     chains.User{ID: otherUserID, Name: "Иван", City: "Москва"},
-			Item:       chains.Item{ID: uuid.New(), Title: "Телефон", Description: "Состояние отличное", CategoryID: uuid.New(), Photo: "phone.jpg", Attributes: json.RawMessage(`[{"attribute_id":"condition","value":"excellent"}]`), EstimatedPrice: 85000},
+			Item:       chains.Item{ID: uuid.New(), Title: "Телефон", Description: "Состояние отличное", CategoryID: uuid.New(), Photos: []string{"phone.jpg", "phone-side.jpg"}, Attributes: json.RawMessage(`[{"attribute_id":"condition","value":"excellent"}]`), EstimatedPrice: 85000},
 			IsAccepted: boolPointer(true),
 		}, {
 			Order:    2,
@@ -142,6 +148,9 @@ func TestGetChainMapsExpectedContract(t *testing.T) {
 	}
 	if response.ChainID != chainID.String() {
 		t.Fatalf("unexpected response: %#v", response)
+	}
+	if len(response.Steps[0].Item.Photos) != 2 || response.Steps[0].Item.Photos[1] != "phone-side.jpg" {
+		t.Fatalf("all item photos were not returned: %#v", response.Steps[0].Item.Photos)
 	}
 }
 
